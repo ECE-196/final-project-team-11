@@ -6,23 +6,17 @@ import matplotlib.pyplot as plt
 
 
 def process_audio(mp3_path):
-    # Load the MP3 file
-    # Load with the original sample rate
+
     y, sr = librosa.load(mp3_path, sr=None)
 
-    # Calculate the length of each segment in samples
-    segment_length = 5 * sr  # 5 seconds multiplied by the number of samples per second
+    segment_length = 5 * sr
 
-    # Initialize a list to store the spectrogram matrices
     spectrograms = []
 
-    # Process each 5-second segment
     for start in range(0, len(y), segment_length):
         end = start + segment_length
-        # Ensure we don't exceed the length of the audio
         if end > len(y):
             end = len(y)
-        # Extract the segment
         segment = y[start:end]
 
         # Generate the spectrogram for the segment
@@ -49,7 +43,7 @@ def process_audio(mp3_path):
 
 
 # Path to your MP3 file
-mp3_path = 'data/bio.mp3'
+mp3_path = 'backend/data/bio.mp3'
 
 # Call the function
 spectrogram_list = process_audio(mp3_path)

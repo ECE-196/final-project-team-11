@@ -14,3 +14,10 @@ Connect pin 1 on teensy to pin 18 on ESP
 
 Trying to figure out how to transmit data in packets every 5 seconds from teensy to ESP32.
 
+
+**5/13/24**
+
+https://www.youtube.com/watch?v=bu308tAqyIw
+
+Received Parts, trying to set up Teensy -> RGB shield direct. Very useful video above.
+
