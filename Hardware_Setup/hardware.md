@@ -9,3 +9,5 @@ https://github.com/pixelmatix/SmartMatrix/tree/c76d3efb417e802f0508740c2779e4446
 
 Use this commit
 
+https://github.com/GadgetReboot/LEDPanel/tree/master/SmartMatrix3_Hack/src_file_changes
+
