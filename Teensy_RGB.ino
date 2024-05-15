@@ -61,7 +61,6 @@ void loop() {
     static unsigned long intervalStartTime = currentTime;
     static float sumFreq = 0;
     static float avgFreq[5] = {0}; // Array to store 5 average frequencies
-    static int   sampleCount = 0;
     static float sumAmplitude = 0;
     static float avgAmplitude[5] = {0};
     static float averageAmp = 0;
@@ -111,6 +110,7 @@ void loop() {
       // Display the LEDs
       FastLED.show();
       intervalStartTime = currentTime;
+      static int   sampleCount = 0;
     }
   }
 }
