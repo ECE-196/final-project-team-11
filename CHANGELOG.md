@@ -21,3 +21,6 @@ https://www.youtube.com/watch?v=bu308tAqyIw
 
 Received Parts, trying to set up Teensy -> RGB shield direct. Very useful video above.
 
+**5/15/24**
+Got Teensy 3.6 connected to RGB board;
+Edited Teensy library 3.

@@ -11,3 +11,10 @@ Use this commit
 
 https://github.com/GadgetReboot/LEDPanel/tree/master/SmartMatrix3_Hack/src_file_changes
 
+
+Edited Smart Matrix 3 Library
+
+
+
+Paul Stoffregen Audio example
+https://github.com/PaulStoffregen/Audio/blob/master/examples/Analysis/SpectrumAnalyzerBasic/SpectrumAnalyzerBasic.ino
