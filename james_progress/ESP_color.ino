@@ -1,5 +1,10 @@
 #include <Adafruit_Protomatter.h>
-#include <Arduino.h>
+#include <arduinoFFT.h>
+
+#define SAMPLES 64              // Must be a power of 2
+#define SAMPLING_FREQUENCY 40000 // Hz, must be less than 1MHz
+
+#define MIC_PIN 1               // Analog input pin for the microphone
 
 // Define the pin numbers for the matrix connections
 #define R1_PIN 46
@@ -34,20 +39,34 @@ Adafruit_Protomatter matrix(
   false        // No double-buffering here (see "doublebuffer" example)
 );
 
-// Function to generate a random color
-uint16_t getRandomColor() {
-  uint8_t red = random(256);
-  uint8_t green = random(256);
-  uint8_t blue = random(256);
-  return matrix.color565(red, green, blue);
+// Instantiate the FFT object
+ArduinoFFT<double> FFT = ArduinoFFT<double>();
+
+unsigned int samplingPeriodUs;
+unsigned long microseconds;
+
+double vReal[SAMPLES];
+double vImag[SAMPLES];
+
+// Function to map FFT results to matrix
+void drawSpectrogram() {
+  matrix.fillScreen(0); // Clear the screen first
+  
+  for (int x = 0; x < SAMPLES / 2; x++) {
+    int intensity = map(vReal[x], 0, 1000, 0, 63);
+    intensity = constrain(intensity, 0, 63);
+    for (int y = 0; y < intensity; y++) {
+      matrix.drawPixel(x + 16, 63 - y, matrix.color565(0, 0, 255)); // Blue color
+    }
+  }
+  matrix.show(); // Update the display
 }
 
-// SETUP - RUNS ONCE AT PROGRAM START
-void setup(void) {
-  Serial.begin(9600);
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12); // Set ADC resolution to 12 bits (0-4095)
 
-  // Initialize random seed
-  randomSeed(analogRead(0));
+  samplingPeriodUs = round(1000000 * (1.0 / SAMPLING_FREQUENCY));
 
   // Initialize matrix
   ProtomatterStatus status = matrix.begin();
@@ -58,31 +77,30 @@ void setup(void) {
     for (;;);
   }
 
-  // Initial background color
-  matrix.fillScreen(getRandomColor());
-
-  // Draw a blue vertical line in the middle
-  for (int y = 0; y < matrix.height(); y++) {
-    matrix.drawPixel(matrix.width() / 2, y, matrix.color565(0, 0, 255));
-  }
-
-  // Show initial state
-  matrix.show();
+  Serial.println("Microphone FFT Spectrogram started...");
 }
 
-// LOOP - RUNS REPEATEDLY AFTER SETUP
-void loop(void) {
-  // Change the background color every second
-  delay(1000);
+void loop() {
+  // Sample the microphone signal
+  for (int i = 0; i < SAMPLES; i++) {
+    microseconds = micros();
 
-  // Fill the screen with a random color
-  matrix.fillScreen(getRandomColor());
+    vReal[i] = analogRead(MIC_PIN);
+    vImag[i] = 0;
 
-  // Draw a blue vertical line in the middle
-  for (int x = 0; x < matrix.width(); x++) {
-    matrix.drawPixel(x, matrix.height() / 2, matrix.color565(0, 0, 255));
+    while (micros() < (microseconds + samplingPeriodUs)) {
+      // Wait for the next sample time
+    }
   }
 
-  // Update the matrix display
-  matrix.show();
+  // Compute FFT
+  FFT.windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+  FFT.compute(vReal, vImag, SAMPLES, FFT_FORWARD);
+  FFT.complexToMagnitude(vReal, vImag, SAMPLES);
+
+  // Draw the spectrogram on the matrix
+  drawSpectrogram();
+
+  // Small delay before next FFT calculation
+  delay(100);
 }
