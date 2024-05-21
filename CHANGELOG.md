@@ -24,3 +24,10 @@ Received Parts, trying to set up Teensy -> RGB shield direct. Very useful video 
 **5/15/24**
 Got Teensy 3.6 connected to RGB board;
 Edited Teensy library 3.
+
+**5/20/24**
+Completely switched to ESP32 Devboard because of increased compatibility with Adafruit 64x64 and simpler audio processing capabilities.
+
+Worked on poster
+
+Added website: https://hamesjan.github.io/tritone_website
