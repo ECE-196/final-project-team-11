@@ -48,16 +48,16 @@ void loop() {
     unsigned long currentTime = millis();
     static unsigned long intervalStartTime = currentTime;
     static float sumFreq = 0;
-    static float avgFreq[5] = {0}; // Array to store 5 average frequencies
+    static float avgFreq[2] = {0}; // Array to store 5 average frequencies
     static int sampleCount = 0;
     static float sumAmplitude = 0;
-    static float avgAmplitude[5] = {0};
+    static float avgAmplitude[2] = {0};
     static float averageAmp = 0; 
     static float sumAmp = 0;
     static float averageFreq = 0; 
     static float sumFrequency = 0;
 
-    if(currentTime - intervalStartTime <= 5000 && sampleCount < 5){
+    if(currentTime - intervalStartTime <= 2000 && sampleCount < 2){
       if(currentTime - intervalStartTime >= 1000){
         avgFreq[sampleCount] = sumFreq/86;
         sumFreq = 0;
@@ -70,15 +70,15 @@ void loop() {
       sumAmplitude += amplitude;
     }
     else{
-      for(int i = 0; i < 5; i++){
+      for(int i = 0; i < 2; i++){
         sumAmp += avgAmplitude[i];
         sumFrequency += avgFreq[i];
       }
-      averageAmp = sumAmp/5;
-      averageFreq = sumFrequency/5; 
+      averageAmp = sumAmp/2;
+      averageFreq = sumFrequency/2; 
 
       // Serial.printf("Average Dominant Frequencies (Hz): %.2f, %.2f, %.2f, %.2f, %.2f | Average Amplitude (Hz): %.2f, %.2f, %.2f, %.2f, %.2f | Average Amplitude (Hz): %.2f | Average Frequency (Hz): %.2f \n", avgFreq[0], avgFreq[1], avgFreq[2], avgFreq[3], avgFreq[4], avgAmplitude[0], avgAmplitude[1], avgAmplitude[2], avgAmplitude[3], avgAmplitude[4], averageAmp, averageFreq);
-      for(int i = 0; i < 5; i++) {
+      for(int i = 0; i < 2; i++) {
         Serial1.printf("%.2f,", avgFreq[i]);
       }
       Serial1.print("\n");

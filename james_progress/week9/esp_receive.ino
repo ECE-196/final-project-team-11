@@ -1,8 +1,8 @@
 #include <Adafruit_Protomatter.h>
 #include <arduinoFFT.h>
 
-#define SAMPLES 128              // Must be a power of 2
-#define SAMPLING_FREQUENCY 40000 // Hz, must be less than 1MHz
+#define SAMPLES 512              // Must be a power of 2
+#define SAMPLING_FREQUENCY 44100 // Hz, must be less than 1MHz
 
 #define MIC_PIN 1               // Analog input pin for the microphone
 
@@ -64,19 +64,27 @@ void setup() {
 void drawSpectrogram() {
   matrix.fillScreen(0); // Clear the screen first
 
+  randomSeed(analogRead(0));
+
   // Find the index of the maximum magnitude in the FFT results
-  for (int x = 1; x < SAMPLES / 2; x++) {
+  for (int x = 1; x < SAMPLES; x = x + 8) {
 
     // Map frequency to color and draw on matrix
-    int intensity = map(vReal[x], 0, 1000, 0, 64);
-    intensity = constrain(intensity, 0, 64);
+    int intensity = map(vReal[x], 0, 1000, 0, 16); // Half of the original height (64/2 = 32)
+    intensity = constrain(intensity, 0, 16);
 
     uint16_t color;
     int hue = map(x, 0, SAMPLES / 2, 0, 255); // Map frequency to hue (0-255)
     color = matrix.colorHSV(hue * 256, 255, 255); // Convert hue to RGB color
 
-    for (int y = 1; y < intensity; y++) {
-      matrix.drawPixel(x, 64 - y, color);
+    int startY = 32; // Middle of the matrix (64/2 = 32)
+
+    for (int y = 0; y < intensity; y++) {
+      if ( (x/8) % 2 == 0 ) {
+        matrix.drawPixel(x / 8, startY - y, color); // Go up
+      } else {
+        matrix.drawPixel(x / 8, startY + y, color); // Go down
+      }
     }
   }
   matrix.show(); // Update the display
@@ -104,7 +112,6 @@ void loop() {
     String receivedData = Serial1.readStringUntil('\n'); // Read the data until newline character
     USBSerial.println("Received frequencies: " + receivedData);
   }
-    delay(100); // Add a small delay
   
   // Draw the spectrogram on the matrix
   drawSpectrogram();
