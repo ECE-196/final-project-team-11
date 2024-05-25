@@ -1,0 +1,113 @@
+#include <Adafruit_Protomatter.h>
+#include <arduinoFFT.h>
+
+#define SAMPLES 128              // Must be a power of 2
+#define SAMPLING_FREQUENCY 40000 // Hz, must be less than 1MHz
+
+#define MIC_PIN 1               // Analog input pin for the microphone
+
+// Define the pin numbers for the matrix connections
+#define R1_PIN 46
+#define G1_PIN 45
+#define B1_PIN 42
+#define R2_PIN 41
+#define G2_PIN 40
+#define B2_PIN 39
+#define A_PIN 38
+#define B_PIN 37
+#define C_PIN 36
+#define D_PIN 35
+#define E_PIN 48
+#define LAT_PIN 34
+#define OE_PIN 33
+#define CLK_PIN 47
+
+// Initialize arrays for the RGB pins and address pins
+uint8_t rgbPins[] = {R1_PIN, G1_PIN, B1_PIN, R2_PIN, G2_PIN, B2_PIN};
+uint8_t addrPins[] = {A_PIN, B_PIN, C_PIN, D_PIN, E_PIN};
+uint8_t clockPin = CLK_PIN;
+uint8_t latchPin = LAT_PIN;
+uint8_t oePin = OE_PIN;
+
+// Create an instance of the Protomatter matrix for a 64x64 matrix
+Adafruit_Protomatter matrix(
+  64,          // Width of matrix (or matrix chain) in pixels
+  6,           // Bit depth, 1-6
+  1, rgbPins,  // Number of matrix chains, array of 6 RGB pins for each
+  5, addrPins, // Number of address pins (height is inferred), array of pins
+  clockPin, latchPin, oePin, // Other matrix control pins
+  false        // No double-buffering here (see "doublebuffer" example)
+);
+
+// Instantiate the FFT object
+ArduinoFFT<double> FFT = ArduinoFFT<double>();
+
+unsigned int samplingPeriodUs;
+unsigned long microseconds;
+
+double vReal[SAMPLES];
+double vImag[SAMPLES];
+
+
+void setup() {
+  USBSerial.begin(9600); // Initialize serial communication for debugging (USB Serial)
+  Serial1.begin(115200, SERIAL_8N1, 17, 18);
+  analogReadResolution(12); // Set ADC resolution to 12 bits (0-4095)
+
+  samplingPeriodUs = round(1000000 * (1.0 / SAMPLING_FREQUENCY));
+
+  // Initialize matrix
+  matrix.begin();
+}
+
+// Function to map FFT results to matrix
+void drawSpectrogram() {
+  matrix.fillScreen(0); // Clear the screen first
+
+  // Find the index of the maximum magnitude in the FFT results
+  for (int x = 1; x < SAMPLES / 2; x++) {
+
+    // Map frequency to color and draw on matrix
+    int intensity = map(vReal[x], 0, 1000, 0, 64);
+    intensity = constrain(intensity, 0, 64);
+
+    uint16_t color;
+    int hue = map(x, 0, SAMPLES / 2, 0, 255); // Map frequency to hue (0-255)
+    color = matrix.colorHSV(hue * 256, 255, 255); // Convert hue to RGB color
+
+    for (int y = 1; y < intensity; y++) {
+      matrix.drawPixel(x, 64 - y, color);
+    }
+  }
+  matrix.show(); // Update the display
+}
+
+void loop() {
+  // Sample the microphone signal
+  for (int i = 0; i < SAMPLES; i++) {
+    microseconds = micros();
+
+    vReal[i] = analogRead(MIC_PIN);
+    vImag[i] = 0;
+
+    while (micros() < (microseconds + samplingPeriodUs)) {
+      // Wait for the next sample time
+    }
+  }
+
+  // Compute FFT
+  FFT.windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+  FFT.compute(vReal, vImag, SAMPLES, FFT_FORWARD);
+  FFT.complexToMagnitude(vReal, vImag, SAMPLES);
+
+  if (Serial1.available()) {
+    String receivedData = Serial1.readStringUntil('\n'); // Read the data until newline character
+    USBSerial.println("Received frequencies: " + receivedData);
+  }
+    delay(100); // Add a small delay
+  
+  // Draw the spectrogram on the matrix
+  drawSpectrogram();
+
+  
+}

@@ -31,3 +31,13 @@ Completely switched to ESP32 Devboard because of increased compatibility with Ad
 Worked on poster
 
 Added website: https://hamesjan.github.io/tritone_website
+
+**5/25/24**
+Got Teensy -> ESP32 communication working
+Connect pin 0 on teensy to pin 18 on ESP
+Connect pin 1 on teensy to pin 17 on ESP
+
+use USB Serial to print to computer,
+send through Serial1
+
+See james_progress/week9/ for working communications
