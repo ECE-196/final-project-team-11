@@ -41,3 +41,15 @@ use USB Serial to print to computer,
 send through Serial1
 
 See james_progress/week9/ for working communications
+
+**5/29/24**
+
+Got machine learning working on ESP and Teensy.
+Utilized pytorch and exported parameters after training model on computer with collected music frequency data.
+
+Model works as follows:
+
+Inferences on 10 past domininat frequencies in last 10 seconds, as well as the current frequency with a boosted weight.
+Uses a hidden layer of size 16 with two layers and ReLU activation. Trained on Break it Out by Rocket Summer
+
+Remember to normalize inputs on arduino.
